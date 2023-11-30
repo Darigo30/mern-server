@@ -9,6 +9,7 @@ const api = express.Router()
 
 // Define una ruta POST en el enrutador para el registro de autenticación
 api.post("/auth/register", AuthController.register)
+api.post("/auth/login", AuthController.login)
 
 // Exporta el enrutador 
 module.exports = api
