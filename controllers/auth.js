@@ -37,9 +37,9 @@ function register (req, res) {
     })
 }
 
-
+//Función para loguearse 
 function login(req, res) {
-
+    
     const { email, password } = req.body
 
     if(!email) res.status(400).send({ msg: "El email es obligatorio"})
@@ -67,8 +67,30 @@ function login(req, res) {
         }
     }) 
 }
+
+function refreshAccesToken(req, res) {
+    const { token } = req.body
+
+    if (!token) res.status(400).send({msg: "Token requerido" })
+
+    const { user_id } = jwt.decoded(token)
+
+    console.log("user id", user_id)
+
+    User.findOne({ _id: user_id }, (error, userStorage) => {
+        if(error) {
+            res.status(500).send({ msg: "Error del servidor"})
+        } else {
+            res.status(200).send({
+                accesToken: jwt.createAccesToken(userStorage)
+            })
+        }
+    })
+}
+
 // Exporta el controlador como un objeto con la función "register"
 module.exports = {
     register,
     login,
+    refreshAccesToken
 }
