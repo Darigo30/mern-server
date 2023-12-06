@@ -17,7 +17,7 @@ function asureAuth(req, res, next) {
         req.user = payload
         next()
     } catch (error) {
-        return res.status(400).sed({msg: "Token invalido"})
+        return res.status(400).send({msg: "Token invalido"})
     }
 }
 
