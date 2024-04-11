@@ -16,38 +16,49 @@ async function getMe(req, res) {
 
 //Obtener todos los usuarios de mi BD si están activos o no 
 async function getUsers(req, res) {
-    const { active } = req.query
-    let response = null
+    try {
+        const { active } = req.query;
+        let response = null;
 
-    if(active === undefined) {
-        response = await  User.find()
-    } else {
-        response = await User.find({ active })
+        if (active === undefined) {
+            response = await User.find();
+        } else {
+            response = await User.find({ active });
+        }
+
+        // Verificar si se encontraron usuarios
+        if (response.length === 0) {
+            return res.status(404).send({ msg: "No se encontraron usuarios" });
+        }
+
+        // Enviar los datos de los usuarios en la respuesta
+        res.status(200).send(response);
+    } catch (error) {
+        console.error("Error al obtener usuarios:", error);
+        res.status(500).send({ msg: "Error al obtener usuarios" });
     }
-    res.status(200).send({msg: "Ok usuario Obtenido"})
 }
 
 //Crear usuario desde el panel del admin
 async function createUser(req, res) {
-    const { password } = req.body
-    const user = new User({ ...req.body, active: false})
-    const salt = bcrypt.genSaltSync(10)
-    const hasPassword = bcrypt.hashSync(password, salt)
-    user.password = hasPassword
+    try {
+        const { password } = req.body;
+        const user = new User({ ...req.body, active: false });
+        const salt = bcrypt.genSaltSync(10);
+        const hashedPassword = bcrypt.hashSync(password, salt);
+        user.password = hashedPassword;
 
-    if(req.files.avatar) {
-        console.log("Avatar file:", req.files.avatar);
-        const imagePath = image.getFilePath(req.files.avatar)
-        user.avatar = imagePath
-        console.log("user avatar", user.avatar)
-    }
-    user.save((error, userStored) => {
-        if(error) {
-            res.status(400).send({ msg: "Error al crear user"})
-        } else{
-            res.status(201).send(userStored)
+        if (req.files.avatar) {
+            const imagePath = image.getFilePath(req.files.avatar);
+            user.avatar = imagePath;
         }
-    })
+
+        const userStored = await user.save();
+        res.status(201).send(userStored);
+    } catch (error) {
+        console.error("Error al crear usuario:", error);
+        res.status(400).send({ msg: "Error al crear usuario", error });
+    }
 }
 
 //Función para actrualizar el usuario
